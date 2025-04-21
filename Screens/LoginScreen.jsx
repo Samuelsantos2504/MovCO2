@@ -1,17 +1,9 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-  Platform,
-  Pressable,
-} from 'react-native';
-import {LinearGradient} from 'expo-linear-gradient';
-import {FontAwesome, AntDesign} from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { View , Text , TextInput, TouchableOpacity , Platform , Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome, AntDesign } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { styles } from './styles/LoginScreen.js'; 
 
 export default function LoginScreen () {
   //Manejo de la fecha de nacimiento
@@ -59,30 +51,43 @@ export default function LoginScreen () {
     >
       <View style={styles.overlay} />
 
-      <View style={styles.card}>
+      <View style={isRegisterView ? styles.cardRegister : styles.card}>
 
         <View style={styles.tabRow}>
           <TouchableOpacity
-            style={styles.activeTab}
             onPress={() => {
               setIsLoginView (true);
               setIsRegisterView (false);
             }}
+            style={isLoginView ? styles.activeTab : null}
           >
-            <Text style={styles.activeText}>Ingresar</Text>
+            <Text style={isLoginView ? styles.activeText : styles.inactiveText}>
+              Ingresar
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               setIsLoginView (false);
               setIsRegisterView (true);
             }}
+            style={isRegisterView ? styles.activeTab : null}
           >
-            <Text style={styles.inactiveText}>Registrarse</Text>
+            <Text
+              style={isRegisterView ? styles.activeText : styles.inactiveText}
+            >
+              Registrarse
+            </Text>
           </TouchableOpacity>
         </View>
 
         {isRegisterView &&
-          <View className="LoginScreen__container">
+          <View style={styles.BoxRegister} className="LoginScreen__container">
+
+            <View style={styles.titleStyles}>
+              <Text>Registro</Text>
+              <Text>Iniciar Sesion</Text>
+            </View>
+
             <View>
               <View style={styles.tabRowLabInp}>
                 <Text style={styles.TextLabelP}>Nombre</Text>
@@ -144,22 +149,33 @@ export default function LoginScreen () {
               />}
 
             <Text style={styles.TextLabel}>Contraseña</Text>
-            <TextInput
-              style={[styles.input, {flex: 1}]}
-              placeholder="Contraseña"
-              secureTextEntry={secureText}
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, {flex: 1}]}
+                placeholder="Contraseña"
+                secureTextEntry={secureText}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={() => setSecureText (!secureText)}>
+                <FontAwesome
+                  name={secureText ? 'eye-slash' : 'eye'}
+                  size={20}
+                  color="#555"
+                />
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity style={styles.loginButton}>
-              <Text style={styles.loginText}>Ingresar</Text>
+              <Text style={styles.loginText}>Registro</Text>
             </TouchableOpacity>
 
           </View>}
 
         {isLoginView &&
           <View className="LoginScreen__container">
+
+            <Text style={styles.TextLabel}>Correo</Text>
             <TextInput
               style={styles.input}
               placeholder="Correo"
@@ -168,6 +184,7 @@ export default function LoginScreen () {
               onChangeText={setEmail}
             />
 
+            <Text style={styles.TextLabel}>Contraseña</Text>
             <View style={styles.passwordContainer}>
               <TextInput
                 style={[styles.input, {flex: 1}]}
@@ -216,135 +233,3 @@ export default function LoginScreen () {
   );
 }
 
-const styles = StyleSheet.create ({
-  background: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', // opcional: oscurece fondo
-  },
-
-  card: {
-    backgroundColor: '#fff',
-    width: '90%',
-    borderRadius: 16,
-    padding: 20,
-    elevation: 20,
-  },
-
-  tabRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-
-  tabRowLabInp: {
-    flexDirection: 'row',
-  },
-
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#2cb67d',
-    paddingBottom: 4,
-  },
-
-  activeText: {
-    fontWeight: 'bold',
-    color: '#000',
-  },
-
-  inactiveText: {
-    color: '#aaa',
-  },
-
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === 'ios' ? 14 : 10,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-  },
-
-  inputA: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === 'ios' ? 14 : 10,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-    width: '48%',
-    marginRight: '2%',
-  },
-
-  TextLabelP: {
-    marginRight: 97,
-    marginLeft: 5,
-    color: 'gray',
-    paddingBottom: 10,
-  },
-
-  TextLabel: {
-    marginRight: 97,
-    marginLeft: 5,
-    color: 'gray',
-    paddingBottom: 10,
-  },
-
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-
-  forgot: {
-    color: '#3b82f6',
-    textDecorationLine: 'underline',
-  },
-
-  loginButton: {
-    backgroundColor: '#2cb67d',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-
-  loginText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-
-  separator: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    marginVertical: 20,
-  },
-
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-  },
-
-  socialText: {
-    marginLeft: 10,
-    fontSize: 14,
-  },
-});
