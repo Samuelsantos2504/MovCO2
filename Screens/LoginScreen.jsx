@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
-import { View , Text , TextInput, TouchableOpacity , Platform , Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome, AntDesign } from '@expo/vector-icons';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Platform,
+  Pressable,
+  Modal,
+} from 'react-native';
+import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
+
+import {LinearGradient} from 'expo-linear-gradient';
+import {FontAwesome, AntDesign} from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { styles } from './styles/LoginScreen.js'; 
+import {styles} from './styles/LoginScreen.js';
+import {registrarUsuarios} from '../RegistrarUsuario.js';
 
 export default function LoginScreen () {
   //Manejo de la fecha de nacimiento
@@ -32,60 +43,102 @@ export default function LoginScreen () {
   //Manejo de la vista de registro y login
   const [isRegisterView, setIsRegisterView] = useState (false);
   const [isLoginView, setIsLoginView] = useState (true);
+  const [tabBar, setTabBar] = useState (true);
+  const [modalVisible, setModalVisible] = useState (false);
 
   const LoginIngreso = () => {
     setIsLoginView (false);
   };
 
+
+  function registerUser () {
+    let modalTrue;
+    try {
+      registrarUsuarios (email,password,nombre,apellido,telefono,formattedDate);
+      modalTrue = modalVisible;
+    } 
+    catch (error) 
+    {
+      modalTrue = !modalVisible;    
+    }
+    setModalVisible(modalTrue);
+  }
+
   return (
     <LinearGradient
-      colors={[
-        '#000000',
-        'rgb(66, 252, 131)',
-        'rgb(66, 252, 131)',
-        'rgb(36, 124, 67)',
-      ]}
-      start={{x: 0.5, y: 0}}
-      end={{x: 0.5, y: 1}}
+      colors={['#58DD7C', '#58DD7C', '#1C1919', '#1C1919']}
+      locations={[0, 0.1, 0.95, 1]} // Valores ajustados
+      start={{x: 0.5, y: 1}}
+      end={{x: 0.5, y: 0}}
       style={styles.background}
     >
       <View style={styles.overlay} />
 
       <View style={isRegisterView ? styles.cardRegister : styles.card}>
 
-        <View style={styles.tabRow}>
-          <TouchableOpacity
-            onPress={() => {
-              setIsLoginView (true);
-              setIsRegisterView (false);
+        
+
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.centeredView}>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              Alert.alert ('Modal has been closed.');
+              setModalVisible (!modalVisible);
             }}
-            style={isLoginView ? styles.activeTab : null}
           >
-            <Text style={isLoginView ? styles.activeText : styles.inactiveText}>
-              Ingresar
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setIsLoginView (false);
-              setIsRegisterView (true);
-            }}
-            style={isRegisterView ? styles.activeTab : null}
-          >
-            <Text
-              style={isRegisterView ? styles.activeText : styles.inactiveText}
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>Usuario Registrado de manera exitosa</Text>
+                <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setModalVisible (!modalVisible)}
+                >
+                  <Text style={styles.textStyle}>Aceptar</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </SafeAreaView>
+      </SafeAreaProvider>
+
+        
+          <View style={styles.tabRow}>
+            <TouchableOpacity
+              onPress={() => {
+                setIsLoginView (true);
+                setIsRegisterView (false);
+              }}
+              style={isLoginView ? styles.activeTab : null}
             >
-              Registrarse
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text
+                style={isLoginView ? styles.activeText : styles.inactiveText}
+              >
+                Ingresar
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setIsLoginView (false);
+                setIsRegisterView (true);
+              }}
+              style={isRegisterView ? styles.activeTab : null}
+            >
+              <Text
+                style={isRegisterView ? styles.activeText : styles.inactiveText}
+              >
+                Registrarse
+              </Text>
+            </TouchableOpacity>
+          </View>
 
         {isRegisterView &&
           <View style={styles.BoxRegister} className="LoginScreen__container">
 
-            <View style={styles.titleStyles}>
-              <Text>Registro</Text>
-              <Text>Iniciar Sesion</Text>
+            <View style={styles.titleContent}>
+              <Text style={styles.titleA}>Registro</Text>
             </View>
 
             <View>
@@ -166,7 +219,7 @@ export default function LoginScreen () {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.loginButton}>
+            <TouchableOpacity style={styles.loginButton} onPress={registerUser}>
               <Text style={styles.loginText}>Registro</Text>
             </TouchableOpacity>
 
@@ -232,4 +285,3 @@ export default function LoginScreen () {
     </LinearGradient>
   );
 }
-

@@ -1,12 +1,13 @@
 import React from 'react';
-import {StyleSheet, Image, Text, TouchableOpacity, View, Dimensions} from 'react-native';
+import { StyleSheet, Image, Text, TouchableOpacity, View, Dimensions} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles/HomeScreen.js'
 
 
-const { height } = Dimensions.get('window');
+
+export const { altura } = Dimensions.get('window');
 
 export default function HomeScreen () {
   
@@ -18,9 +19,10 @@ export default function HomeScreen () {
 
   return (
     <LinearGradient
-      colors={['#000000', 'rgb(66, 252, 131)','rgb(66, 252, 131)', 'rgb(36, 124, 67)']}
-      start={{x: 0.5, y: 0}}
-      end={{x: 0.5, y: 1}}
+    colors={['#58DD7C', '#58DD7C', '#1C1919', '#1C1919']}
+    locations={[0, 0.1, 0.95, 1]} // Valores ajustados
+    start={{x: 0.5, y: 1}}
+    end={{x: 0.5, y: 0}}
       style={styles.container}
     >
       <SafeAreaProvider>

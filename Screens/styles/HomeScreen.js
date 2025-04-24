@@ -1,3 +1,7 @@
+import { StyleSheet, Platform } from "react-native";
+import { altura } from "../HomeScreen.jsx";
+
+
 export const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -9,7 +13,7 @@ export const styles = StyleSheet.create({
     },
     image: {
       width: '100%',
-      height: height * 0.68, 
+      height: '70%', 
       opacity: 0.7, 
       marginTop: 50,
     },
