@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,24 +6,30 @@ import {
   TouchableOpacity,
   Platform,
   Pressable,
+  BackHandler,
   Modal,
 } from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
-
+import {Alert} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {FontAwesome, AntDesign} from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { handleRegisterError } from '../ErrorManagment.js';
 import {styles} from './styles/LoginScreen.js';
+import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {registrarUsuarios} from '../RegistrarUsuario.js';
+import {iniciarSesion} from '../IniciarSesion.js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen () {
   //Manejo de la fecha de nacimiento
   const [date, setDate] = useState (new Date ());
   const [show, setShow] = useState (false);
+  const navigation = useNavigation ();
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setShow (false); // cerrar al seleccionar
+    setShow (false);
     setDate (currentDate);
   };
 
@@ -46,23 +52,66 @@ export default function LoginScreen () {
   const [tabBar, setTabBar] = useState (true);
   const [modalVisible, setModalVisible] = useState (false);
 
-  const LoginIngreso = () => {
-    setIsLoginView (false);
+  const mapScreen = () => {
+    navigation.navigate ('Mapa');
   };
 
-
-  function registerUser () {
-    let modalTrue;
+  async function registerUser () {
     try {
-      registrarUsuarios (email,password,nombre,apellido,telefono,formattedDate);
-      modalTrue = modalVisible;
-    } 
-    catch (error) 
-    {
-      modalTrue = !modalVisible;    
+      if (!email || !password || !nombre || !apellido || !telefono || !formattedDate) {
+        throw new Error('Todos los campos son obligatorios');
+      }
+  
+      const register = await registrarUsuarios(
+        email,
+        password,
+        nombre,
+        apellido,
+        telefono,
+        formattedDate
+      );
+  
+      if (!register || register.error) {
+        throw new Error(register?.message || 'Error al registrar el usuario');
+      }
+  
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+      mapScreen();
+  
+    } catch (error) {
+      handleRegisterError(error);
     }
-    setModalVisible(modalTrue);
   }
+
+  async function loginUser () {
+    try {
+      const user = await iniciarSesion (email.toLowerCase (), password);
+
+      if (!user) {
+        throw new Error ('Credenciales inválidas');
+      }
+
+      await AsyncStorage.setItem ('isLoggedIn', 'true');
+      mapScreen ();
+    } catch (error) {
+      Alert.alert ('Error', 'Correo o contraseña incorrectos.');
+    }
+  }
+
+  useEffect (
+    () => {
+      const onBackPress = () => {
+        navigation.navigate ('Home');
+        return true;
+      };
+      const backHandler = BackHandler.addEventListener (
+        'hardwareBackPress',
+        onBackPress
+      );
+      return () => backHandler.remove ();
+    },
+    [navigation]
+  );
 
   return (
     <LinearGradient
@@ -73,66 +122,34 @@ export default function LoginScreen () {
       style={styles.background}
     >
       <View style={styles.overlay} />
-
       <View style={isRegisterView ? styles.cardRegister : styles.card}>
 
-        
-
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.centeredView}>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              Alert.alert ('Modal has been closed.');
-              setModalVisible (!modalVisible);
+        <View style={styles.tabRow}>
+          <TouchableOpacity
+            onPress={() => {
+              setIsLoginView (true);
+              setIsRegisterView (false);
             }}
+            style={isLoginView ? styles.activeTab : null}
           >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>Usuario Registrado de manera exitosa</Text>
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => setModalVisible (!modalVisible)}
-                >
-                  <Text style={styles.textStyle}>Aceptar</Text>
-                </Pressable>
-              </View>
-            </View>
-          </Modal>
-        </SafeAreaView>
-      </SafeAreaProvider>
-
-        
-          <View style={styles.tabRow}>
-            <TouchableOpacity
-              onPress={() => {
-                setIsLoginView (true);
-                setIsRegisterView (false);
-              }}
-              style={isLoginView ? styles.activeTab : null}
+            <Text style={isLoginView ? styles.activeText : styles.inactiveText}>
+              Ingresar
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setIsLoginView (false);
+              setIsRegisterView (true);
+            }}
+            style={isRegisterView ? styles.activeTab : null}
+          >
+            <Text
+              style={isRegisterView ? styles.activeText : styles.inactiveText}
             >
-              <Text
-                style={isLoginView ? styles.activeText : styles.inactiveText}
-              >
-                Ingresar
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setIsLoginView (false);
-                setIsRegisterView (true);
-              }}
-              style={isRegisterView ? styles.activeTab : null}
-            >
-              <Text
-                style={isRegisterView ? styles.activeText : styles.inactiveText}
-              >
-                Registrarse
-              </Text>
-            </TouchableOpacity>
-          </View>
+              Registrarse
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {isRegisterView &&
           <View style={styles.BoxRegister} className="LoginScreen__container">
@@ -264,7 +281,7 @@ export default function LoginScreen () {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.loginButton}>
+            <TouchableOpacity style={styles.loginButton} onPress={loginUser}>
               <Text style={styles.loginText}>Ingresar</Text>
             </TouchableOpacity>
 

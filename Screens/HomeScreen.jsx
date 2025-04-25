@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Image, Text, TouchableOpacity, View, Dimensions} from 'react-native';
+import { StyleSheet, Image, Text, TouchableOpacity, View, Dimensions, BackHandler} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,  } from '@react-navigation/native';
 import { styles } from './styles/HomeScreen.js'
 
 
@@ -16,6 +16,14 @@ export default function HomeScreen () {
   const handlePressLogin = () => {
     navigation.navigate('Login'); 
   };
+
+  const onBackPress = () => {
+          BackHandler.exitApp ();
+          return true;
+        };
+  
+  BackHandler.addEventListener ('hardwareBackPress', onBackPress);
+  
 
   return (
     <LinearGradient

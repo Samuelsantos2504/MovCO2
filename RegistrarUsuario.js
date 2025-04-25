@@ -1,6 +1,8 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import supabase from "./supabaseClient";
+import { Alert } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 
 export async function registrarUsuarios(email, password, nombre, apellido, telefono, fechaNacimiento) {
   try {
@@ -24,12 +26,13 @@ export async function registrarUsuarios(email, password, nombre, apellido, telef
       .select();
 
     if (error) {
-      console.error("Error al insertar en Supabase:", error);
     } else {
       console.log("Usuario guardado en Supabase:", data);
     }
 
+    Alert.alert ('Usuario registrado exitosamente!');
+
   } catch (error) {
-    console.error("Error al registrar el usuario:", error.message);
+    Alert.alert ('Error al registrar el usuario:');
   }
 }

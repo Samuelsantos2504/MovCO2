@@ -4,10 +4,30 @@ import { NavigationContainer } from "@react-navigation/native";
 import LoginScreen from "./Screens/LoginScreen";
 import RegisterScreen from "./Screens/RegisterScreen";
 import HomeScreen from "./Screens/HomeScreen";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from "react";
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkLoginStatus() {
+      const isLogged = await AsyncStorage.getItem('isLoggedIn');
+      if (isLogged === 'true') {
+        setUserLoggedIn(true);
+      }
+      setIsLoading(false);
+    }
+
+    checkLoginStatus();
+  }, []);
+
+  if (isLoading) return null;
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -15,7 +35,7 @@ export default function App() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Mapa" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
