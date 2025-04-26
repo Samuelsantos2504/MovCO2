@@ -53,10 +53,10 @@ export default function LoginScreen () {
   const [modalVisible, setModalVisible] = useState (false);
 
   const mapScreen = () => {
-    navigation.navigate ('Mapa');
+    navigation.navigate ('Puntos');
   };
 
-  async function registerUser () {
+  async function registerUser() {
     try {
       if (!email || !password || !nombre || !apellido || !telefono || !formattedDate) {
         throw new Error('Todos los campos son obligatorios');
@@ -72,21 +72,24 @@ export default function LoginScreen () {
       );
   
       if (!register || register.error) {
-        throw new Error(register?.message || 'Error al registrar el usuario');
+        throw new Error(register?.error || 'Error desconocido al registrar');
       }
   
       await AsyncStorage.setItem('isLoggedIn', 'true');
       mapScreen();
   
     } catch (error) {
-      handleRegisterError(error);
+      console.log(handleRegisterError(error));
     }
   }
+  
 
   async function loginUser () {
     try {
-      const user = await iniciarSesion (email.toLowerCase (), password);
+      const user = await iniciarSesion (email, password);
       
+      console.log ('Usuario:', user);
+
       if (!user) {
         throw new Error ('Credenciales inválidas');
       }
@@ -94,7 +97,8 @@ export default function LoginScreen () {
       await AsyncStorage.setItem ('isLoggedIn', 'true');
       mapScreen();
     } catch (error) {
-      Alert.alert ('Error', 'Correo o contraseña incorrectos.',error);
+      console.error ('Error al iniciar sesión:', error);
+      Alert.alert ('Error', 'Correo o contraseña incorrectos.');
     }
   }
 
