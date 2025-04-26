@@ -21,6 +21,7 @@ export async function iniciarSesion(email, password) {
         }
 
         Alert.alert("Inicio de sesión exitoso", `Bienvenido ${data?.name || "Usuario"}`);
+        return data;
     } 
     catch (error) {
         console.error("Error al iniciar sesión:", error.code, error.message);

@@ -6,6 +6,7 @@ import RegisterScreen from "./Screens/RegisterScreen";
 import HomeScreen from "./Screens/HomeScreen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from "react";
+import MapScreen from "./Screens/MapScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +36,8 @@ export default function App() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Mapa" component={RegisterScreen} />
+        <Stack.Screen name="Mapa" component={MapScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>

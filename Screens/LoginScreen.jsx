@@ -86,15 +86,15 @@ export default function LoginScreen () {
   async function loginUser () {
     try {
       const user = await iniciarSesion (email.toLowerCase (), password);
-
+      
       if (!user) {
         throw new Error ('Credenciales inválidas');
       }
 
       await AsyncStorage.setItem ('isLoggedIn', 'true');
-      mapScreen ();
+      mapScreen();
     } catch (error) {
-      Alert.alert ('Error', 'Correo o contraseña incorrectos.');
+      Alert.alert ('Error', 'Correo o contraseña incorrectos.',error);
     }
   }
 
