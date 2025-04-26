@@ -3,9 +3,9 @@ import { auth } from "./firebaseConfig";
 import supabase from "./supabaseClient";
 import { Alert } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import { handleRegisterError } from "./ErrorManagment";
 
 export async function registrarUsuarios(email, password, nombre, apellido, telefono, fechaNacimiento) {
-  try {
     // Registro en Firebase
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -31,8 +31,7 @@ export async function registrarUsuarios(email, password, nombre, apellido, telef
     }
 
     Alert.alert ('Usuario registrado exitosamente!');
+    return user;
 
-  } catch (error) {
-    Alert.alert ('Error al registrar el usuario:');
-  }
+
 }
