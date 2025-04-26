@@ -95,7 +95,7 @@ export default function LoginScreen () {
       }
 
       await AsyncStorage.setItem ('isLoggedIn', 'true');
-      mapScreen ();
+      mapScreen();
     } catch (error) {
       console.error ('Error al iniciar sesión:', error);
       Alert.alert ('Error', 'Correo o contraseña incorrectos.');
