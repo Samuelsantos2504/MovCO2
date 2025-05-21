@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  ActivityIndicator, 
-  Alert, 
-  Text, 
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Text,
   TouchableOpacity,
   Dimensions,
   TextInput,
@@ -13,11 +13,11 @@ import {
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withRepeat, 
-  withTiming 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming
 } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
@@ -101,7 +101,7 @@ const MapScreen = () => {
         </View>
 
         <View style={styles.searchContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.searchInput}
             onPress={() => setSearchVisible('origin')}
           >
@@ -111,7 +111,7 @@ const MapScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.searchInput}
             onPress={() => setSearchVisible('destination')}
           >
@@ -200,7 +200,7 @@ const MapScreen = () => {
             <MaterialIcons
               name={
                 type === 'bici' ? 'pedal-bike' :
-                type === 'moto' ? 'motorcycle' : 'directions-car'
+                  type === 'moto' ? 'motorcycle' : 'directions-car'
               }
               size={28}
               color={selectedTransport === type ? '#FFF' : '#4CAF50'}

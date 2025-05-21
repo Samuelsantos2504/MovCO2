@@ -53,7 +53,7 @@ export default function LoginScreen () {
   const [modalVisible, setModalVisible] = useState (false);
 
   const mapScreen = () => {
-    navigation.navigate ('Puntos');
+    navigation.navigate ('Mapa');
   };
 
   async function registerUser() {
