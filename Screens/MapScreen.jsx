@@ -4,7 +4,7 @@ import { styles } from './styles/MapScreen.js';
 import { View, StyleSheet, ActivityIndicator, Alert, Text, TouchableOpacity, Dimensions, TextInput, FlatList, Platform, BackHandler,} from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -184,7 +184,7 @@ export default function MapScreen() {
         </View>
 
         <View style={styles.searchContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.searchInput}
             onPress={() => setSearchVisible('origin')}
           >
@@ -194,7 +194,7 @@ export default function MapScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.searchInput}
             onPress={() => setSearchVisible('destination')}
           >
@@ -270,79 +270,179 @@ export default function MapScreen() {
       </MapView>
 
       <View style={styles.transportContainer}>
-        {/* Subview solo para los botones en fila */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          {['bici', 'moto', 'carro'].map((type) => (
-            <TouchableOpacity
-              key={type}
-              style={[
-                styles.transportButton,
-                selectedTransport === type && styles.selectedTransport
-              ]}
-              onPress={() => setSelectedTransport(type)}
-            >
-              <MaterialIcons
-                name={
-                  type === 'bici' ? 'pedal-bike' :
-                  type === 'moto' ? 'motorcycle' : 'directions-car'
-                }
-                size={28}
-                color={selectedTransport === type ? '#FFF' : '#2cb67d'}
-              />
-              <Text style={[
-                styles.transportText,
-                selectedTransport === type && styles.selectedTransportText
-              ]}>
-                {type.toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Mostrar solo si hay origen y destino */}
-        {origin && destination && (
-          <View style={{
-            marginTop: 16,
-            backgroundColor: '#FFF',
-            borderRadius: 20,
-            padding: 16,
-            alignItems: 'center',
-            elevation: 6,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            width: '100%',
-          }}>
-            {finalDistance > 0 && (
-              <Text style={styles.distanceText}>
-                Puntos Aproximados: {finalDistance.toFixed(2)} m
-              </Text>
-            )}
-            <TouchableOpacity
-              style={styles.startButton}
-              onPress={() => {
-                Alert.alert(
-                  'Confirmar',
-                  `¿Deseas finalizar el viaje y guardar ${finalDistance.toFixed(2)} puntos?`,
-                  [
-                    { text: 'Cancelar', style: 'cancel' },
-                    { text: 'Aceptar', onPress: () => {
-                      actualizarPuntos(finalDistance, cargarPuntos); // ⬅️ pasa cargarPuntos como callback
-                    }
-                     },
-                  ],
-                  { cancelable: false }
-                );
-              }}
-            >
-              <Text style={styles.startButtonText}>Iniciar viaje</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {['bici', 'moto', 'carro'].map((type) => (
+          <TouchableOpacity
+            key={type}
+            style={[
+              styles.transportButton,
+              selectedTransport === type && styles.selectedTransport
+            ]}
+            onPress={() => setSelectedTransport(type)}
+          >
+            <MaterialIcons
+              name={
+                type === 'bici' ? 'pedal-bike' :
+                type === 'moto' ? 'motorcycle' : 'directions-car'
+              }
+              size={28}
+              color={selectedTransport === type ? '#FFF' : '#4CAF50'}
+            />
+            <Text style={[
+              styles.transportText,
+              selectedTransport === type && styles.selectedTransportText
+            ]}>
+              {type.toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
-
-
-    </View> 
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF',
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  greeting: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1A237E',
+  },
+  pointsContainer: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    elevation: 2,
+  },
+  pointsText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  searchContainer: {
+    gap: 8,
+  },
+  searchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#EEE',
+    borderRadius: 8,
+    gap: 8,
+  },
+  inputText: {
+    color: '#333',
+    fontSize: 16,
+    flex: 1,
+  },
+  searchModal: {
+    position: 'absolute',
+    top: 140,
+    left: 16,
+    right: 16,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    zIndex: 2,
+    elevation: 4,
+    maxHeight: 200,
+  },
+  locationItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  locationName: {
+    fontSize: 16,
+    color: '#333',
+  },
+  map: {
+    flex: 1,
+  },
+  transportContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    borderRadius: 24,
+    padding: 8,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  transportButton: {
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    width: width * 0.28,
+    alignItems: 'center',
+  },
+  selectedTransport: {
+    backgroundColor: '#4CAF50',
+  },
+  transportText: {
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4CAF50',
+  },
+  selectedTransportText: {
+    color: '#FFF',
+  },
+  pulseEffect: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#4CAF5020',
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  innerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50',
+  },
+  markerPin: {
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    padding: 6,
+    alignItems: 'center',
+    elevation: 4,
+  },
+  markerText: {
+    fontSize: 10,
+    color: '#333',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+export default MapScreen;

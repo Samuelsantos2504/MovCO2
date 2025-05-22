@@ -21,7 +21,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,6 +39,14 @@
         }
       ]
     ],
-    "permissions": ["LOCATION"]
+    "permissions": [
+      "LOCATION"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "730eb684-5e17-4229-a1d8-bf5f6efd20eb"
+      }
+    },
+    "owner": "samuel102504"
   }
 }

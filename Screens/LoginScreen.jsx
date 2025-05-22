@@ -53,6 +53,9 @@ export default function LoginScreen () {
   const [tabBar, setTabBar] = useState (true);
   const [modalVisible, setModalVisible] = useState (false);
 
+  const mapScreen = () => {
+
+
   async function registerUser() {
     try {
       if (!email || !password || !nombre || !apellido || !telefono || !formattedDate) {
