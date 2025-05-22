@@ -40,6 +40,7 @@ export default function LoginScreen () {
   const [nombre, setNombre] = useState ('');
   const [apellido, setApellido] = useState ('');
   const [telefono, setTelefono] = useState ('');
+  
 
   //Manejo de seguridad y vista de contraseña
   const [password, setPassword] = useState ('');
@@ -51,10 +52,6 @@ export default function LoginScreen () {
   const [isLoginView, setIsLoginView] = useState (true);
   const [tabBar, setTabBar] = useState (true);
   const [modalVisible, setModalVisible] = useState (false);
-
-  const mapScreen = () => {
-    navigation.navigate ('Puntos');
-  };
 
   async function registerUser() {
     try {
@@ -82,23 +79,27 @@ export default function LoginScreen () {
       console.log(handleRegisterError(error));
     }
   }
+
+  const mapScreen = (name) => {
+    navigation.navigate('Mapa', { userName: name });
+  };
   
-
-  async function loginUser () {
+  async function loginUser() {
     try {
-      const user = await iniciarSesion (email, password);
+      const { user, name } = await iniciarSesion(email, password);
       
-      console.log ('Usuario:', user);
-
+      console.log('Usuario:', user);
+  
       if (!user) {
-        throw new Error ('Credenciales inválidas');
+        throw new Error('Credenciales inválidas');
       }
-
-      await AsyncStorage.setItem ('isLoggedIn', 'true');
-      mapScreen();
+  
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+      await AsyncStorage.setItem('email', user.email);
+      mapScreen(name);
     } catch (error) {
-      console.error ('Error al iniciar sesión:', error);
-      Alert.alert ('Error', 'Correo o contraseña incorrectos.');
+      console.error('Error al iniciar sesión:', error);
+      Alert.alert('Error', 'Correo o contraseña incorrectos.');
     }
   }
 
