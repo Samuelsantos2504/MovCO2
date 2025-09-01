@@ -3,7 +3,7 @@ import { StyleSheet, Image, Text, TouchableOpacity, View, Dimensions, BackHandle
 import {LinearGradient} from 'expo-linear-gradient';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import { useNavigation,  } from '@react-navigation/native';
-import { styles } from './styles/HomeScreen.js'
+import { styles } from './styles/HomeScreenStyles.js'
 
 
 

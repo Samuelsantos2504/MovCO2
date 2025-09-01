@@ -21,6 +21,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAgTNzSnQaukdKx32R6nTsW2wNH2gVmLD4"
+        }
+      },
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -38,9 +43,6 @@
           "locationAlwaysAndWhenInUsePermission": "Necesitamos acceso a tu ubicación para mostrar las rutas"
         }
       ]
-    ],
-    "permissions": [
-      "LOCATION"
     ],
     "extra": {
       "eas": {

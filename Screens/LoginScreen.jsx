@@ -7,96 +7,92 @@ import {
   Platform,
   Pressable,
   BackHandler,
-  Modal,
+  Alert,
 } from 'react-native';
-import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
-import {Alert} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {FontAwesome, AntDesign} from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { handleRegisterError } from '../ErrorManagment.js';
-import {styles} from './styles/LoginScreen.js';
-import {useNavigation, useFocusEffect} from '@react-navigation/native';
+import {handleRegisterError} from '../ErrorManagment.js';
+import {styles} from './styles/LoginScreenStyles.js';
+import {useNavigation} from '@react-navigation/native';
 import {registrarUsuarios} from '../RegistrarUsuario.js';
 import {iniciarSesion} from '../IniciarSesion.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function LoginScreen () {
-  //Manejo de la fecha de nacimiento
-  const [date, setDate] = useState (new Date ());
-  const [show, setShow] = useState (false);
-  const navigation = useNavigation ();
+export default function LoginScreen() {
+  // Manejo de la fecha de nacimiento
+  const [date, setDate] = useState(new Date());
+  const [show, setShow] = useState(false);
+  const navigation = useNavigation();
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setShow (false);
-    setDate (currentDate);
+    setShow(false);
+    setDate(currentDate);
   };
 
-  const formattedDate = date.toLocaleDateString ();
+  const formattedDate = date.toLocaleDateString();
 
-  //Manejo de los datos del usuario
-  const [email, setEmail] = useState ('');
-  const [nombre, setNombre] = useState ('');
-  const [apellido, setApellido] = useState ('');
-  const [telefono, setTelefono] = useState ('');
-  
+  // Manejo de los datos del usuario
+  const [email, setEmail] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [apellido, setApellido] = useState('');
+  const [telefono, setTelefono] = useState('');
 
-  //Manejo de seguridad y vista de contraseña
-  const [password, setPassword] = useState ('');
-  const [rememberMe, setRememberMe] = useState (false);
-  const [secureText, setSecureText] = useState (true);
+  // Manejo de seguridad y vista de contraseña
+  const [password, setPassword] = useState('');
+  const [secureText, setSecureText] = useState(true);
 
-  //Manejo de la vista de registro y login
-  const [isRegisterView, setIsRegisterView] = useState (false);
-  const [isLoginView, setIsLoginView] = useState (true);
-  const [tabBar, setTabBar] = useState (true);
-  const [modalVisible, setModalVisible] = useState (false);
+  // Manejo de la vista de registro y login
+  const [isRegisterView, setIsRegisterView] = useState(false);
+  const [isLoginView, setIsLoginView] = useState(true);
 
-  const mapScreen = () => {
-
+  const mapScreen = name => {
+    navigation.navigate('Mapa', {userName: name});
+  };
 
   async function registerUser() {
     try {
-      if (!email || !password || !nombre || !apellido || !telefono || !formattedDate) {
+      if (
+        !email ||
+        !password ||
+        !nombre ||
+        !apellido ||
+        !telefono ||
+        !formattedDate
+      ) {
         throw new Error('Todos los campos son obligatorios');
       }
-  
+
       const register = await registrarUsuarios(
         email,
         password,
         nombre,
         apellido,
         telefono,
-        formattedDate
+        formattedDate,
       );
-  
+
       if (!register || register.error) {
         throw new Error(register?.error || 'Error desconocido al registrar');
       }
-  
+
       await AsyncStorage.setItem('isLoggedIn', 'true');
-      mapScreen();
-  
+      mapScreen(nombre);
     } catch (error) {
       console.log(handleRegisterError(error));
+      Alert.alert('Error de registro', handleRegisterError(error));
     }
   }
 
-  const mapScreen = (name) => {
-    navigation.navigate('Mapa', { userName: name });
-  };
-  
   async function loginUser() {
     try {
-      const { user, name } = await iniciarSesion(email, password);
-      
-      console.log('Usuario:', user);
-  
+      const {user, name} = await iniciarSesion(email, password);
+
       if (!user) {
         throw new Error('Credenciales inválidas');
       }
-  
+
       await AsyncStorage.setItem('isLoggedIn', 'true');
       await AsyncStorage.setItem('email', user.email);
       mapScreen(name);
@@ -106,62 +102,53 @@ export default function LoginScreen () {
     }
   }
 
-  useEffect (
-    () => {
-      const onBackPress = () => {
-        navigation.navigate ('Home');
-        return true;
-      };
-      const backHandler = BackHandler.addEventListener (
-        'hardwareBackPress',
-        onBackPress
-      );
-      return () => backHandler.remove ();
-    },
-    [navigation]
-  );
+  useEffect(() => {
+    const onBackPress = () => {
+      navigation.navigate('Home');
+      return true;
+    };
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
+    return () => backHandler.remove();
+  }, [navigation]);
 
   return (
     <LinearGradient
       colors={['#58DD7C', '#58DD7C', '#1C1919', '#1C1919']}
-      locations={[0, 0.1, 0.95, 1]} // Valores ajustados
+      locations={[0, 0.1, 0.95, 1]}
       start={{x: 0.5, y: 1}}
       end={{x: 0.5, y: 0}}
-      style={styles.background}
-    >
+      style={styles.background}>
       <View style={styles.overlay} />
       <View style={isRegisterView ? styles.cardRegister : styles.card}>
-
         <View style={styles.tabRow}>
           <TouchableOpacity
             onPress={() => {
-              setIsLoginView (true);
-              setIsRegisterView (false);
+              setIsLoginView(true);
+              setIsRegisterView(false);
             }}
-            style={isLoginView ? styles.activeTab : null}
-          >
+            style={isLoginView ? styles.activeTab : null}>
             <Text style={isLoginView ? styles.activeText : styles.inactiveText}>
               Ingresar
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
-              setIsLoginView (false);
-              setIsRegisterView (true);
+              setIsLoginView(false);
+              setIsRegisterView(true);
             }}
-            style={isRegisterView ? styles.activeTab : null}
-          >
+            style={isRegisterView ? styles.activeTab : null}>
             <Text
-              style={isRegisterView ? styles.activeText : styles.inactiveText}
-            >
+              style={isRegisterView ? styles.activeText : styles.inactiveText}>
               Registrarse
             </Text>
           </TouchableOpacity>
         </View>
 
-        {isRegisterView &&
+        {isRegisterView && (
           <View style={styles.BoxRegister} className="LoginScreen__container">
-
             <View style={styles.titleContent}>
               <Text style={styles.titleA}>Registro</Text>
             </View>
@@ -188,7 +175,6 @@ export default function LoginScreen () {
                   onChangeText={setApellido}
                 />
               </View>
-
             </View>
 
             <Text style={styles.TextLabel}>Correo</Text>
@@ -210,21 +196,22 @@ export default function LoginScreen () {
             />
 
             <Text style={styles.TextLabel}>Fecha de Nacimiento</Text>
-            <Pressable onPress={() => setShow (true)}>
+            <Pressable onPress={() => setShow(true)}>
               <TextInput
-                value={date.toLocaleDateString ()}
+                value={date.toLocaleDateString()}
                 editable={false}
                 pointerEvents="none"
                 style={styles.input}
               />
             </Pressable>
-            {show &&
+            {show && (
               <DateTimePicker
                 value={date}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
                 onChange={onChange}
-              />}
+              />
+            )}
 
             <Text style={styles.TextLabel}>Contraseña</Text>
             <View style={styles.passwordContainer}>
@@ -235,7 +222,7 @@ export default function LoginScreen () {
                 value={password}
                 onChangeText={setPassword}
               />
-              <TouchableOpacity onPress={() => setSecureText (!secureText)}>
+              <TouchableOpacity onPress={() => setSecureText(!secureText)}>
                 <FontAwesome
                   name={secureText ? 'eye-slash' : 'eye'}
                   size={20}
@@ -247,12 +234,11 @@ export default function LoginScreen () {
             <TouchableOpacity style={styles.loginButton} onPress={registerUser}>
               <Text style={styles.loginText}>Registro</Text>
             </TouchableOpacity>
+          </View>
+        )}
 
-          </View>}
-
-        {isLoginView &&
+        {isLoginView && (
           <View className="LoginScreen__container">
-
             <Text style={styles.TextLabel}>Correo</Text>
             <TextInput
               style={styles.input}
@@ -271,7 +257,7 @@ export default function LoginScreen () {
                 value={password}
                 onChangeText={setPassword}
               />
-              <TouchableOpacity onPress={() => setSecureText (!secureText)}>
+              <TouchableOpacity onPress={() => setSecureText(!secureText)}>
                 <FontAwesome
                   name={secureText ? 'eye-slash' : 'eye'}
                   size={20}
@@ -304,10 +290,9 @@ export default function LoginScreen () {
               <FontAwesome name="facebook" size={20} color="#4267B2" />
               <Text style={styles.socialText}>Continuar con Facebook</Text>
             </TouchableOpacity>
-          </View>}
-
+          </View>
+        )}
       </View>
     </LinearGradient>
   );
-}
 }

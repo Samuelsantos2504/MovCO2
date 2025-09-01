@@ -87,8 +87,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-
-    flexDirection: "column", // <- antes era 'row'
+    flexDirection: "row",
     gap: 12,
   },
 
@@ -96,7 +95,7 @@ export const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 20,
     backgroundColor: "#F5F5F5",
-    width: "33%",
+    width: "30%",
     alignItems: "center",
   },
   selectedTransport: {

@@ -12,7 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Alert } from 'react-native';
-import { styles } from './styles/PointsScreen.js';
+import { styles } from './styles/PointsScreenStyles.js';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons'; 
