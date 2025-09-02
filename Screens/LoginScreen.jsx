@@ -50,6 +50,9 @@ export default function LoginScreen() {
   const mapScreen = name => {
     navigation.navigate('Mapa', {userName: name});
   };
+  const mapAdminScreen = name => {
+    navigation.navigate('Admin', {userName: name});
+  };
 
   async function registerUser() {
     try {
@@ -74,32 +77,27 @@ export default function LoginScreen() {
       );
 
       if (!register || register.error) {
-        throw new Error(register?.error || 'Error desconocido al registrar');
+        throw new Error(register?.error.message);
       }
 
       await AsyncStorage.setItem('isLoggedIn', 'true');
       mapScreen(nombre);
     } catch (error) {
       console.log(handleRegisterError(error));
-      Alert.alert('Error de registro', handleRegisterError(error));
     }
   }
 
-  async function loginUser() {
-    try {
-      const {user, name} = await iniciarSesion(email, password);
-
-      if (!user) {
-        throw new Error('Credenciales inválidas');
-      }
-
-      await AsyncStorage.setItem('isLoggedIn', 'true');
-      await AsyncStorage.setItem('email', user.email);
-      mapScreen(name);
-    } catch (error) {
-      console.error('Error al iniciar sesión:', error);
-      Alert.alert('Error', 'Correo o contraseña incorrectos.');
-    }
+  async function loginUser() { 
+    try { 
+      const {user, name, Rol} = await iniciarSesion(email, password); 
+      if (!user) { throw new Error('Credenciales inválidas'); } 
+      await AsyncStorage.setItem('isLoggedIn', 'true'); 
+      await AsyncStorage.setItem('email', user.email); 
+      if (Rol === "Administrador") { mapAdminScreen(name); } else { mapScreen(name); } 
+    } catch (error) { 
+      console.error('Error al iniciar sesión:', error); 
+      Alert.alert('Error', 'Correo o contraseña incorrectos.'); 
+    } 
   }
 
   useEffect(() => {

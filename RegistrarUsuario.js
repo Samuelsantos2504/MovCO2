@@ -1,18 +1,14 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import supabase from "./supabaseClient";
 import { Alert } from "react-native";
-import { useNavigation } from '@react-navigation/native';
-import { handleRegisterError } from "./ErrorManagment";
 
 export async function registrarUsuarios(email, password, nombre, apellido, telefono, fechaNacimiento) {
-    // Registro en Firebase
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    console.log("Usuario registrado en Firebase:", user.email);
+  const currentDate = new Date().toISOString();
+  let firebaseUser = null;
 
-    // Registro en Supabase
-    const { data, error } = await supabase
+  try {
+    const { data: userData, error: error1 } = await supabase
       .from("ActiveUsers")
       .insert([
         {
@@ -20,18 +16,55 @@ export async function registrarUsuarios(email, password, nombre, apellido, telef
           name: nombre,
           lastName: apellido,
           phoneNumber: telefono,
-          birthDate: fechaNacimiento
+          birthDate: fechaNacimiento,
+          Puntos: 1500,
+          Rol: "Usuario"
         }
       ])
-      .select();
+      .select()
+      .single();
 
-    if (error) {
-    } else {
-      console.log("Usuario guardado en Supabase:", data);
+    if (error1) throw new Error(`Error en ActiveUsers: ${error1.message}`);
+
+    const { data: subscriberData, error: error2 } = await supabase
+      .from("Subscribers")
+      .insert([
+        {
+          email: email,
+          subscribeDate: currentDate,
+          renewalDate: "2099-01-01",
+          SubType: "Free",
+        }
+      ])
+      .select()
+      .single();
+
+    if (error2) {
+      await supabase.from("ActiveUsers").delete().eq("email", email);
+      throw new Error(`Error en Subscribers: ${error2.message}`);
     }
 
-    Alert.alert ('Usuario registrado exitosamente!');
-    return user;
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    firebaseUser = userCredential.user;
 
+    console.log("Usuario registrado en Firebase:", firebaseUser.email);
+    console.log("Usuario guardado en Supabase:", userData, subscriberData);
 
+    Alert.alert("Usuario registrado exitosamente!");
+    return firebaseUser;
+
+  } catch (error) {
+    console.error("Error al registrar usuario:", error);
+
+    if (firebaseUser) {
+      try {
+        await deleteUser(firebaseUser);
+      } catch (delError) {
+        console.error("No se pudo eliminar el usuario en Firebase:", delError);
+      }
+    }
+
+    Alert.alert("Error", "No se pudo registrar el usuario. Intente nuevamente.");
+    return null;
+  }
 }

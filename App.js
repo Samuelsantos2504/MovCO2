@@ -4,6 +4,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import LoginScreen from "./Screens/LoginScreen";
 import HomeScreen from "./Screens/HomeScreen";
 import PointsScreen from "./Screens/PointsScreen";
+import AdminScreen from "./Screens/AdminScreen";
+import SubScreen from "./Screens/SubScreens";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from "react";
 import MapScreen from "./Screens/MapScreen";
@@ -32,13 +34,15 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Login"
+        initialRouteName="Subs"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Admin" component={AdminScreen} />
         <Stack.Screen name="Mapa" component={MapScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Puntos" component={PointsScreen} />
+        <Stack.Screen name="Subs" component={SubScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
