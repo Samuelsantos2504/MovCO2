@@ -6,6 +6,7 @@ import supabase from "./supabaseClient";
 
 export async function iniciarSesion(email, password) {
     try {
+
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
@@ -13,7 +14,9 @@ export async function iniciarSesion(email, password) {
             .from("ActiveUsers")
             .select("name, Rol")
             .eq("email", user.email)
-            .single();
+            .maybeSingle();
+
+        
 
         if (error) {
             console.error("Error al consultar Supabase:", error.message);

@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   header: {
-    padding: 16,
+    padding: 12,
     backgroundColor: "#FFF",
     borderBottomWidth: 1,
     borderBottomColor: "#EEE",
@@ -18,21 +18,22 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   greeting: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "700",
     color: "#2cb67d",
   },
   pointsContainer: {
     backgroundColor: "#2cb67d",
-    borderRadius: 20,
+    borderRadius: 5,
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
+    marginLeft: 6,
     elevation: 2,
   },
   pointsText: {
     color: "#FFF",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 15,
   },
   searchContainer: {
     gap: 8,

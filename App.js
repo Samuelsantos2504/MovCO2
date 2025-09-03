@@ -6,6 +6,7 @@ import HomeScreen from "./Screens/HomeScreen";
 import PointsScreen from "./Screens/PointsScreen";
 import AdminScreen from "./Screens/AdminScreen";
 import SubScreen from "./Screens/SubScreens";
+import SubScreenAdmin from "./Screens/SubScreensAdmin";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from "react";
 import MapScreen from "./Screens/MapScreen";
@@ -34,7 +35,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Subs"
+        initialRouteName="Home"
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />
@@ -43,6 +44,7 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Puntos" component={PointsScreen} />
         <Stack.Screen name="Subs" component={SubScreen} />
+        <Stack.Screen name="SubsAdmin" component={SubScreenAdmin} />
       </Stack.Navigator>
     </NavigationContainer>
   );

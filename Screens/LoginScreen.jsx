@@ -8,6 +8,7 @@ import {
   Pressable,
   BackHandler,
   Alert,
+  ScrollView,
 } from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {FontAwesome, AntDesign} from '@expo/vector-icons';
@@ -54,51 +55,70 @@ export default function LoginScreen() {
     navigation.navigate('Admin', {userName: name});
   };
 
-  async function registerUser() {
-    try {
-      if (
-        !email ||
-        !password ||
-        !nombre ||
-        !apellido ||
-        !telefono ||
-        !formattedDate
-      ) {
-        throw new Error('Todos los campos son obligatorios');
-      }
-
-      const register = await registrarUsuarios(
-        email,
-        password,
-        nombre,
-        apellido,
-        telefono,
-        formattedDate,
-      );
-
-      if (!register || register.error) {
-        throw new Error(register?.error.message);
-      }
-
-      await AsyncStorage.setItem('isLoggedIn', 'true');
-      mapScreen(nombre);
-    } catch (error) {
-      console.log(handleRegisterError(error));
+ async function registerUser() {
+  try {
+    if (
+      !email ||
+      !password ||
+      !nombre ||
+      !apellido ||
+      !telefono ||
+      !formattedDate
+    ) {
+      throw new Error('Todos los campos son obligatorios');
     }
-  }
 
-  async function loginUser() { 
-    try { 
-      const {user, name, Rol} = await iniciarSesion(email, password); 
-      if (!user) { throw new Error('Credenciales inválidas'); } 
-      await AsyncStorage.setItem('isLoggedIn', 'true'); 
-      await AsyncStorage.setItem('email', user.email); 
-      if (Rol === "Administrador") { mapAdminScreen(name); } else { mapScreen(name); } 
-    } catch (error) { 
-      console.error('Error al iniciar sesión:', error); 
-      Alert.alert('Error', 'Correo o contraseña incorrectos.'); 
-    } 
+    // Convertir todos los campos a minúsculas antes de registrar
+    const emailLower = email.toLowerCase();
+    const nombreLower = nombre.toLowerCase();
+    const apellidoLower = apellido.toLowerCase();
+    const telefonoLower = telefono.toLowerCase();
+
+    const register = await registrarUsuarios(
+      emailLower,
+      password,
+      nombreLower,
+      apellidoLower,
+      telefonoLower,
+      formattedDate,
+    );
+
+    if (!register || register.error) {
+      throw new Error(register?.error.message);
+    }
+
+    await AsyncStorage.setItem('email', emailLower);
+    await AsyncStorage.setItem('isLoggedIn', 'true');
+    mapScreen(nombreLower);
+  } catch (error) {
+    console.log(handleRegisterError(error));
   }
+}
+
+ async function loginUser() {
+  try {
+    // Convertir email a minúsculas antes de iniciar sesión
+    const resultado = await iniciarSesion(email.toLowerCase(), password);
+
+    if (!resultado || !resultado.user) {
+      throw new Error('Credenciales inválidas');
+    }
+
+    const {user, name, Rol} = resultado;
+
+    await AsyncStorage.setItem('isLoggedIn', 'true');
+    await AsyncStorage.setItem('email', user.email);
+
+    if (Rol === 'Administrador') {
+      mapAdminScreen(name.toLowerCase());
+    } else {
+      mapScreen(name.toLowerCase());
+    }
+  } catch (error) {
+    console.error('Error al iniciar sesión:', error);
+    Alert.alert('Error', 'Correo o contraseña incorrectos.');
+  }
+}
 
   useEffect(() => {
     const onBackPress = () => {
@@ -146,149 +166,159 @@ export default function LoginScreen() {
         </View>
 
         {isRegisterView && (
-          <View style={styles.BoxRegister} className="LoginScreen__container">
-            <View style={styles.titleContent}>
-              <Text style={styles.titleA}>Registro</Text>
-            </View>
-
-            <View>
-              <View style={styles.tabRowLabInp}>
-                <Text style={styles.TextLabelP}>Nombre</Text>
-                <Text style={styles.TextLabelP}>Apellido</Text>
+          <ScrollView
+            contentContainerStyle={{flexGrow: 1}}
+            keyboardShouldPersistTaps="handled">
+            <View style={styles.BoxRegister} className="LoginScreen__container">
+              <View style={styles.titleContent}>
+                <Text style={styles.titleA}>Registro</Text>
               </View>
 
-              <View style={styles.tabRowLabInp}>
-                <TextInput
-                  style={styles.inputA}
-                  placeholder="Samuel"
-                  keyboardType="default"
-                  value={nombre}
-                  onChangeText={setNombre}
-                />
-                <TextInput
-                  style={styles.inputA}
-                  placeholder="Rodriguez"
-                  keyboardType="default"
-                  value={apellido}
-                  onChangeText={setApellido}
-                />
+              <View>
+                <View style={styles.tabRowLabInp}>
+                  <Text style={styles.TextLabelP}>Nombre</Text>
+                  <Text style={styles.TextLabelP}>Apellido</Text>
+                </View>
+
+                <View style={styles.tabRowLabInp}>
+                  <TextInput
+                    style={styles.inputA}
+                    placeholder="Samuel"
+                    keyboardType="default"
+                    value={nombre}
+                    onChangeText={setNombre}
+                  />
+                  <TextInput
+                    style={styles.inputA}
+                    placeholder="Rodriguez"
+                    keyboardType="default"
+                    value={apellido}
+                    onChangeText={setApellido}
+                  />
+                </View>
               </View>
-            </View>
 
-            <Text style={styles.TextLabel}>Correo</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="samuelrod@gmail.com"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-
-            <Text style={styles.TextLabel}>Telefono</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="(312)123-4567"
-              keyboardType="phone-pad"
-              value={telefono}
-              onChangeText={setTelefono}
-            />
-
-            <Text style={styles.TextLabel}>Fecha de Nacimiento</Text>
-            <Pressable onPress={() => setShow(true)}>
+              <Text style={styles.TextLabel}>Correo</Text>
               <TextInput
-                value={date.toLocaleDateString()}
-                editable={false}
-                pointerEvents="none"
                 style={styles.input}
+                placeholder="samuelrod@gmail.com"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
               />
-            </Pressable>
-            {show && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                onChange={onChange}
-              />
-            )}
 
-            <Text style={styles.TextLabel}>Contraseña</Text>
-            <View style={styles.passwordContainer}>
+              <Text style={styles.TextLabel}>Telefono</Text>
               <TextInput
-                style={[styles.input, {flex: 1}]}
-                placeholder="Contraseña"
-                secureTextEntry={secureText}
-                value={password}
-                onChangeText={setPassword}
+                style={styles.input}
+                placeholder="(312)123-4567"
+                keyboardType="phone-pad"
+                value={telefono}
+                onChangeText={setTelefono}
               />
-              <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-                <FontAwesome
-                  name={secureText ? 'eye-slash' : 'eye'}
-                  size={20}
-                  color="#555"
+
+              <Text style={styles.TextLabel}>Fecha de Nacimiento</Text>
+              <Pressable onPress={() => setShow(true)}>
+                <TextInput
+                  value={date.toLocaleDateString()}
+                  editable={false}
+                  pointerEvents="none"
+                  style={styles.input}
                 />
+              </Pressable>
+              {show && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                  onChange={onChange}
+                />
+              )}
+
+              <Text style={styles.TextLabel}>Contraseña</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[styles.input, {flex: 1}]}
+                  placeholder="Contraseña"
+                  secureTextEntry={secureText}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+                  <FontAwesome
+                    name={secureText ? 'eye-slash' : 'eye'}
+                    size={20}
+                    color="#555"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={registerUser}>
+                <Text style={styles.loginText}>Registro</Text>
               </TouchableOpacity>
             </View>
-
-            <TouchableOpacity style={styles.loginButton} onPress={registerUser}>
-              <Text style={styles.loginText}>Registro</Text>
-            </TouchableOpacity>
-          </View>
+          </ScrollView>
         )}
 
         {isLoginView && (
-          <View className="LoginScreen__container">
-            <Text style={styles.TextLabel}>Correo</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Correo"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-
-            <Text style={styles.TextLabel}>Contraseña</Text>
-            <View style={styles.passwordContainer}>
+          <ScrollView
+            contentContainerStyle={{flexGrow: 1}}
+            keyboardShouldPersistTaps="handled">
+            <View className="LoginScreen__container">
+              <Text style={styles.TextLabel}>Correo</Text>
               <TextInput
-                style={[styles.input, {flex: 1}]}
-                placeholder="Contraseña"
-                secureTextEntry={secureText}
-                value={password}
-                onChangeText={setPassword}
+                style={styles.input}
+                placeholder="Correo"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
               />
-              <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-                <FontAwesome
-                  name={secureText ? 'eye-slash' : 'eye'}
-                  size={20}
-                  color="#555"
+
+              <Text style={styles.TextLabel}>Contraseña</Text>
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  style={[styles.input, {flex: 1}]}
+                  placeholder="Contraseña"
+                  secureTextEntry={secureText}
+                  value={password}
+                  onChangeText={setPassword}
                 />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.optionsRow}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text>Recordar</Text>
+                <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+                  <FontAwesome
+                    name={secureText ? 'eye-slash' : 'eye'}
+                    size={20}
+                    color="#555"
+                  />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity>
-                <Text style={styles.forgot}>¿Olvidaste la contraseña?</Text>
+
+              <View style={styles.optionsRow}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text>Recordar</Text>
+                </View>
+                <TouchableOpacity>
+                  <Text style={styles.forgot}>¿Olvidaste la contraseña?</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.loginButton} onPress={loginUser}>
+                <Text style={styles.loginText}>Ingresar</Text>
+              </TouchableOpacity>
+
+              <View style={styles.separator} />
+
+              <TouchableOpacity style={styles.socialButton}>
+                <AntDesign name="google" size={20} color="black" />
+                <Text style={styles.socialText}>Continuar con Google</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.socialButton}>
+                <FontAwesome name="facebook" size={20} color="#4267B2" />
+                <Text style={styles.socialText}>Continuar con Facebook</Text>
               </TouchableOpacity>
             </View>
-
-            <TouchableOpacity style={styles.loginButton} onPress={loginUser}>
-              <Text style={styles.loginText}>Ingresar</Text>
-            </TouchableOpacity>
-
-            <View style={styles.separator} />
-
-            <TouchableOpacity style={styles.socialButton}>
-              <AntDesign name="google" size={20} color="black" />
-              <Text style={styles.socialText}>Continuar con Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.socialButton}>
-              <FontAwesome name="facebook" size={20} color="#4267B2" />
-              <Text style={styles.socialText}>Continuar con Facebook</Text>
-            </TouchableOpacity>
-          </View>
+          </ScrollView>
         )}
       </View>
     </LinearGradient>

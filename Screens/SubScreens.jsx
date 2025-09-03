@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { styles } from './styles/SubScreensStyles.js';
-import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
+import CookieManager from '@react-native-cookies/cookies'; 
 
 const API_URL = 'https://zealous-fulfillment-development.up.railway.app/admin';
 const API_PAYMENT = 'https://zealous-fulfillment-development.up.railway.app/pagos';
@@ -24,10 +26,14 @@ export default function SubScreen({ route }) {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedSub, setSelectedSub] = useState(null);
-  const [email, setEmail] = useState('usuario@ejemplo.com');
-
   const [webViewVisible, setWebViewVisible] = useState(false);
   const [approvalUrl, setApprovalUrl] = useState(null);
+
+  // Obtener email de AsyncStorage
+  const [email, setEmail] = useState(null);
+  useEffect(() => {
+    AsyncStorage.getItem('email').then(setEmail);
+  }, []);
 
   // Cargar suscripciones desde la API
   async function cargarSuscripciones() {
@@ -65,9 +71,13 @@ export default function SubScreen({ route }) {
       });
 
       const data = await response.json();
-      if (!data.approvalUrl) throw new Error('No se obtuvo approval URL');
+      if (!data.approvalUrl || !data.orderId) throw new Error('No se obtuvo approval URL o orderId');
 
       setApprovalUrl(data.approvalUrl);
+
+      // 👇 guardar orderId junto con la sub
+      setSelectedSub({ ...sub, orderId: data.orderId });
+
       setWebViewVisible(true);
     } catch (err) {
       console.error(err);
@@ -78,11 +88,11 @@ export default function SubScreen({ route }) {
   // Capturar navegación en WebView
   async function handleWebViewNavigation(navState) {
     const { url } = navState;
-
     if (!url) return;
 
     if (url.includes('success')) {
       setWebViewVisible(false);
+      await CookieManager.clearAll(true); // 👈 Limpiar cookies
       Alert.alert('Pago aprobado', 'Tu pago fue exitoso!');
 
       try {
@@ -90,15 +100,14 @@ export default function SubScreen({ route }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email,
-            SubId: selectedSub.id,
-            SubType: selectedSub.name,
+            orderId: selectedSub.orderId, 
+            email: email,
+            Id: selectedSub.id,
           }),
         });
 
         const data = await response.json();
         if (!data.success) {
-          Alert.alert('Error', 'No se pudo completar la suscripción.');
         } else {
           navigation.navigate('Mapa');
         }
@@ -108,13 +117,10 @@ export default function SubScreen({ route }) {
       }
     } else if (url.includes('cancel')) {
       setWebViewVisible(false);
+      await CookieManager.clearAll(true);
       Alert.alert('Pago cancelado', 'El pago fue cancelado.');
     }
   }
-
-  const filteredSubs = subscriptions.filter((sub) =>
-    sub.name.toLowerCase().includes(filtro.toLowerCase())
-  );
 
   // Cerrar sesión
   function Logout() {
@@ -123,6 +129,10 @@ export default function SubScreen({ route }) {
       { text: 'Cerrar sesión', onPress: () => navigation.navigate('Login') },
     ]);
   }
+
+  const filteredSubs = subscriptions.filter((sub) =>
+    sub.name.toLowerCase().includes(filtro.toLowerCase())
+  );
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -187,7 +197,10 @@ export default function SubScreen({ route }) {
               padding: 15,
               alignItems: 'center',
             }}
-            onPress={() => setWebViewVisible(false)}
+            onPress={async () => {
+              await CookieManager.clearAll(true); 
+              setWebViewVisible(false);
+            }}
           >
             <Text style={{ color: '#fff' }}>Cerrar</Text>
           </TouchableOpacity>

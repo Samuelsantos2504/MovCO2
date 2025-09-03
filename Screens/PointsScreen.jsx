@@ -99,6 +99,9 @@ export default function PointsScreen({ navigation }) {
           <Icon name="arrow-back" size={24} color="#2cb67d" />
         </TouchableOpacity>
         <Text style={styles.titleA}>Redime tus puntos</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Subs')}>
+              <Text style={styles.pointsText}>Suscribete⭐</Text>
+            </TouchableOpacity>
         <View style={styles.pointsContainer}>
             <Text style={styles.pointsText}>{points} Pts</Text>
         </View>
