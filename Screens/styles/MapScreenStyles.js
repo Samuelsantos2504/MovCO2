@@ -167,4 +167,43 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+
+  tripInfoBox: {
+    position: "absolute",
+    bottom: 120, // 👈 encima de los botones de transporte
+    left: 20,
+    right: 20,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: "center",
+  },
+
+  tripInfoText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 5,
+    color: "#333",
+  },
+
+  startTripButton: {
+    marginTop: 10,
+    backgroundColor: "#4CAF50",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
+  },
+
+  startTripButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });

@@ -20,8 +20,8 @@ export default function MapScreen() {
   const [selectedTransport, setSelectedTransport] = useState('carro');
   const [points, setPoints] = useState(0);
   const [subType, setSubType] = useState(null); 
-  
-
+  const [tripPoints, setTripPoints] = useState(0); 
+  const [tripDistance, setTripDistance] = useState(0);
 
   const routeParams = useRoute();
   const { userName } = routeParams.params || {};
@@ -63,8 +63,8 @@ export default function MapScreen() {
 
   // Cargar puntos del usuario desde API
   const cargarPuntos = async () => {
-  try {
-    const email = await AsyncStorage.getItem('email');
+    try {
+      const email = await AsyncStorage.getItem('email');
       if (!email) {
         console.warn('No se encontró email en AsyncStorage.');
         return;
@@ -128,9 +128,7 @@ export default function MapScreen() {
           longitude: c[0],
         }));
         setRoute(coords);
-
-        // Actualizar puntos en API
-        actualizarPuntosAPI(data.routes[0].distance);
+        setTripDistance(data.routes[0].distance);
       } else {
         Alert.alert('Error de ruta', 'No se pudo encontrar una ruta entre los puntos seleccionados.');
         setRoute([]);
@@ -141,24 +139,67 @@ export default function MapScreen() {
     }
   };
 
+  // Calcular puntos del viaje sin afectar los puntos del usuario
+  const calcularTripPoints = (distance) => {
+    if (!distance) return 0;
+
+    let multiplierTransport = 1;
+    if (selectedTransport === 'moto') multiplierTransport = 1.5;
+    if (selectedTransport === 'carro') multiplierTransport = 1.25;
+    if (selectedTransport === 'bici') multiplierTransport = 2.0;
+
+    let multiplierMembership = 1;
+    if (subType === 'Silver') multiplierMembership = 2;
+    if (subType === 'Gold') multiplierMembership = 3;
+    if (subType === 'Black') multiplierMembership = 4;
+
+    const basePoints = (distance / 1000) * multiplierTransport;
+    return Math.round(basePoints * multiplierMembership);
+  };
+
+  // Actualizar tripPoints automáticamente al cambiar distancia, transporte o subType
+  useEffect(() => {
+    if (tripDistance > 0) {
+      const puntosEstimados = calcularTripPoints(tripDistance);
+      setTripPoints(puntosEstimados);
+    }
+  }, [tripDistance, selectedTransport, subType]);
+
   const actualizarPuntosAPI = async (calculatedDistance) => {
     try {
       const email = await AsyncStorage.getItem('email');
       if (!email) return;
 
-      // Ajustar según transporte
-      let finalDistance = calculatedDistance;
-      if (selectedTransport === 'moto') finalDistance *= 0.75;
-      if (selectedTransport === 'carro') finalDistance *= 0.5;
+      // --- Multiplicador según transporte ---
+      let multiplierTransport = 1;
+      if (selectedTransport === 'moto') multiplierTransport = 1.5;
+      if (selectedTransport === 'carro') multiplierTransport = 1.25;
+      if (selectedTransport === 'bici') multiplierTransport = 2.0;
 
+      // --- Multiplicador según membresía ---
+      let multiplierMembership = 1;
+      if (subType === 'Silver') multiplierMembership = 2;
+      if (subType === 'Gold') multiplierMembership = 3;
+      if (subType === 'Black') multiplierMembership = 4;
+
+      // --- Calcular puntos ganados ---
+      const basePoints = (calculatedDistance / 1000) * multiplierTransport;
+      const earnedPoints = Math.round(basePoints * multiplierMembership);
+
+      // --- Enviar a la API ---
       const res = await fetch(`${API_URL}/user/${email}/updatePoints`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ finalDistance })
+        body: JSON.stringify({ finalDistance: earnedPoints })
       });
+
       const data = await res.json();
-      if (res.ok) setPoints(data.nuevosPuntos);
-      else console.error('Error actualizar puntos:', data.error);
+      if (res.ok) {
+        setPoints(data.nuevosPuntos);
+        Alert.alert("¡Viaje iniciado 🚗!", `Ganaste ${earnedPoints} puntos`);
+      } else {
+        console.error('Error actualizar puntos:', data.error);
+      }
     } catch (error) {
       console.error('Error actualizar puntos API:', error);
     }
@@ -227,7 +268,6 @@ export default function MapScreen() {
           if (!origin) setOrigin({ lat: latitude, lng: longitude });
           else if (!destination) setDestination({ lat: latitude, lng: longitude });
           else {
-            // Reiniciar si ya hay ambos
             setOrigin({ lat: latitude, lng: longitude });
             setDestination(null);
             setRoute([]);
@@ -264,6 +304,21 @@ export default function MapScreen() {
           <Polyline coordinates={route} strokeColor="#4CAF50" strokeWidth={4} />
         )}
       </MapView>
+
+      {/* Cuadro de información del viaje */}
+      {origin && destination && (
+        <View style={styles.tripInfoBox}>
+          <Text style={styles.tripInfoText}>Distancia: {(tripDistance / 1000).toFixed(2)} km</Text>
+          <Text style={styles.tripInfoText}>Puntos del viaje: {tripPoints}</Text>
+
+          <TouchableOpacity
+            style={styles.startTripButton}
+            onPress={() => actualizarPuntosAPI(tripDistance)}
+          >
+            <Text style={styles.startTripButtonText}>Iniciar viaje</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Botones transporte */}
       <View style={styles.transportContainer}>

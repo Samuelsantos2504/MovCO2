@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,115 +10,100 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
-import {LinearGradient} from 'expo-linear-gradient';
-import {FontAwesome, AntDesign} from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { FontAwesome, AntDesign } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {handleRegisterError} from '../ErrorManagment.js';
-import {styles} from './styles/LoginScreenStyles.js';
-import {useNavigation} from '@react-navigation/native';
-import {registrarUsuarios} from '../RegistrarUsuario.js';
-import {iniciarSesion} from '../IniciarSesion.js';
+import { handleRegisterError } from '../ErrorManagment.js';
+import { styles } from './styles/LoginScreenStyles.js';
+import { useNavigation } from '@react-navigation/native';
+import { registrarUsuarios } from '../RegistrarUsuario.js';
+import { iniciarSesion } from '../IniciarSesion.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
-  // Manejo de la fecha de nacimiento
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const navigation = useNavigation();
 
   const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(false);
-    setDate(currentDate);
+    setShow(Platform.OS === 'ios'); // iOS deja el picker abierto
+    if (selectedDate) setDate(selectedDate);
   };
 
-  const formattedDate = date.toLocaleDateString();
+  const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
 
-  // Manejo de los datos del usuario
   const [email, setEmail] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [telefono, setTelefono] = useState('');
-
-  // Manejo de seguridad y vista de contraseña
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
-
-  // Manejo de la vista de registro y login
   const [isRegisterView, setIsRegisterView] = useState(false);
   const [isLoginView, setIsLoginView] = useState(true);
 
   const mapScreen = name => {
-    navigation.navigate('Mapa', {userName: name});
+    navigation.navigate('Mapa', { userName: name });
   };
+
   const mapAdminScreen = name => {
-    navigation.navigate('Admin', {userName: name});
+    navigation.navigate('Admin', { userName: name });
   };
 
- async function registerUser() {
-  try {
-    if (
-      !email ||
-      !password ||
-      !nombre ||
-      !apellido ||
-      !telefono ||
-      !formattedDate
-    ) {
-      throw new Error('Todos los campos son obligatorios');
+  async function registerUser() {
+    try {
+      if (!email || !password || !nombre || !apellido || !telefono || !date) {
+        throw new Error('Todos los campos son obligatorios');
+      }
+
+      const emailLower = email.toLowerCase();
+      const nombreLower = nombre.toLowerCase();
+      const apellidoLower = apellido.toLowerCase();
+      const telefonoLower = telefono.toLowerCase();
+
+      const register = await registrarUsuarios(
+        emailLower,
+        password,
+        nombreLower,
+        apellidoLower,
+        telefonoLower,
+        formattedDate
+      );
+
+      if (!register || register.error) {
+        throw new Error(register?.error.message);
+      }
+
+      await AsyncStorage.setItem('email', emailLower);
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+      mapScreen(nombreLower);
+    } catch (error) {
+      console.log(handleRegisterError(error));
     }
-
-    // Convertir todos los campos a minúsculas antes de registrar
-    const emailLower = email.toLowerCase();
-    const nombreLower = nombre.toLowerCase();
-    const apellidoLower = apellido.toLowerCase();
-    const telefonoLower = telefono.toLowerCase();
-
-    const register = await registrarUsuarios(
-      emailLower,
-      password,
-      nombreLower,
-      apellidoLower,
-      telefonoLower,
-      formattedDate,
-    );
-
-    if (!register || register.error) {
-      throw new Error(register?.error.message);
-    }
-
-    await AsyncStorage.setItem('email', emailLower);
-    await AsyncStorage.setItem('isLoggedIn', 'true');
-    mapScreen(nombreLower);
-  } catch (error) {
-    console.log(handleRegisterError(error));
   }
-}
 
- async function loginUser() {
-  try {
-    // Convertir email a minúsculas antes de iniciar sesión
-    const resultado = await iniciarSesion(email.toLowerCase(), password);
+  async function loginUser() {
+    try {
+      const resultado = await iniciarSesion(email.toLowerCase(), password);
 
-    if (!resultado || !resultado.user) {
-      throw new Error('Credenciales inválidas');
+      if (!resultado || !resultado.user) {
+        throw new Error('Credenciales inválidas');
+      }
+
+      const { user, name, Rol } = resultado;
+
+      await AsyncStorage.setItem('isLoggedIn', 'true');
+      await AsyncStorage.setItem('email', user.email);
+
+      if (Rol === 'Administrador') {
+        mapAdminScreen(name.toLowerCase());
+      } else {
+        mapScreen(name.toLowerCase());
+      }
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error);
+      Alert.alert('Error', 'Correo o contraseña incorrectos.');
     }
-
-    const {user, name, Rol} = resultado;
-
-    await AsyncStorage.setItem('isLoggedIn', 'true');
-    await AsyncStorage.setItem('email', user.email);
-
-    if (Rol === 'Administrador') {
-      mapAdminScreen(name.toLowerCase());
-    } else {
-      mapScreen(name.toLowerCase());
-    }
-  } catch (error) {
-    console.error('Error al iniciar sesión:', error);
-    Alert.alert('Error', 'Correo o contraseña incorrectos.');
   }
-}
 
   useEffect(() => {
     const onBackPress = () => {
@@ -127,7 +112,7 @@ export default function LoginScreen() {
     };
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      onBackPress,
+      onBackPress
     );
     return () => backHandler.remove();
   }, [navigation]);
@@ -136,9 +121,10 @@ export default function LoginScreen() {
     <LinearGradient
       colors={['#58DD7C', '#58DD7C', '#1C1919', '#1C1919']}
       locations={[0, 0.1, 0.95, 1]}
-      start={{x: 0.5, y: 1}}
-      end={{x: 0.5, y: 0}}
-      style={styles.background}>
+      start={{ x: 0.5, y: 1 }}
+      end={{ x: 0.5, y: 0 }}
+      style={styles.background}
+    >
       <View style={styles.overlay} />
       <View style={isRegisterView ? styles.cardRegister : styles.card}>
         <View style={styles.tabRow}>
@@ -147,7 +133,8 @@ export default function LoginScreen() {
               setIsLoginView(true);
               setIsRegisterView(false);
             }}
-            style={isLoginView ? styles.activeTab : null}>
+            style={isLoginView ? styles.activeTab : null}
+          >
             <Text style={isLoginView ? styles.activeText : styles.inactiveText}>
               Ingresar
             </Text>
@@ -157,9 +144,9 @@ export default function LoginScreen() {
               setIsLoginView(false);
               setIsRegisterView(true);
             }}
-            style={isRegisterView ? styles.activeTab : null}>
-            <Text
-              style={isRegisterView ? styles.activeText : styles.inactiveText}>
+            style={isRegisterView ? styles.activeTab : null}
+          >
+            <Text style={isRegisterView ? styles.activeText : styles.inactiveText}>
               Registrarse
             </Text>
           </TouchableOpacity>
@@ -167,9 +154,10 @@ export default function LoginScreen() {
 
         {isRegisterView && (
           <ScrollView
-            contentContainerStyle={{flexGrow: 1}}
-            keyboardShouldPersistTaps="handled">
-            <View style={styles.BoxRegister} className="LoginScreen__container">
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.BoxRegister}>
               <View style={styles.titleContent}>
                 <Text style={styles.titleA}>Registro</Text>
               </View>
@@ -219,7 +207,7 @@ export default function LoginScreen() {
               <Text style={styles.TextLabel}>Fecha de Nacimiento</Text>
               <Pressable onPress={() => setShow(true)}>
                 <TextInput
-                  value={date.toLocaleDateString()}
+                  value={formattedDate}
                   editable={false}
                   pointerEvents="none"
                   style={styles.input}
@@ -237,7 +225,7 @@ export default function LoginScreen() {
               <Text style={styles.TextLabel}>Contraseña</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
-                  style={[styles.input, {flex: 1}]}
+                  style={[styles.input, { flex: 1 }]}
                   placeholder="Contraseña"
                   secureTextEntry={secureText}
                   value={password}
@@ -252,9 +240,7 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                style={styles.loginButton}
-                onPress={registerUser}>
+              <TouchableOpacity style={styles.loginButton} onPress={registerUser}>
                 <Text style={styles.loginText}>Registro</Text>
               </TouchableOpacity>
             </View>
@@ -263,9 +249,10 @@ export default function LoginScreen() {
 
         {isLoginView && (
           <ScrollView
-            contentContainerStyle={{flexGrow: 1}}
-            keyboardShouldPersistTaps="handled">
-            <View className="LoginScreen__container">
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View>
               <Text style={styles.TextLabel}>Correo</Text>
               <TextInput
                 style={styles.input}
@@ -278,7 +265,7 @@ export default function LoginScreen() {
               <Text style={styles.TextLabel}>Contraseña</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
-                  style={[styles.input, {flex: 1}]}
+                  style={[styles.input, { flex: 1 }]}
                   placeholder="Contraseña"
                   secureTextEntry={secureText}
                   value={password}
@@ -294,7 +281,7 @@ export default function LoginScreen() {
               </View>
 
               <View style={styles.optionsRow}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text>Recordar</Text>
                 </View>
                 <TouchableOpacity>

@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
     marginTop: 10,
   },
 
@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
   },
 
   titleA: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#2cb67d',
     flex: 1,
@@ -41,6 +41,24 @@ export const styles = StyleSheet.create({
     padding: 8,
     fontSize: 16,
     height: 40,
+  },
+
+  companyIcon: {
+    width: 60,      
+    height: 60,    
+    marginBottom: 5,
+    resizeMode: 'contain', 
+  },
+
+  Suscribir: {
+    borderRadius: 10,
+    backgroundColor: "#ffc400ff",
+    color: "#FFF",
+    fontWeight: "600",
+    padding: 8,
+    fontSize: 16,
+    height: 40,
+    marginLeft: 25,
   },
 
   searchContainer: {
@@ -86,9 +104,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 5,
   },
 
-  companyIcon: {
-    marginBottom: 8,
-  },
+ 
 
   companyText: {
     fontWeight: 'bold',
